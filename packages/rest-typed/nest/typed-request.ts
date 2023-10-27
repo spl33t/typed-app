@@ -6,6 +6,8 @@ import type { Request } from 'express-serve-static-core';
 import { TsRestAppRouteMetadataKey, } from './constants';
 import { Endpoint } from "@packages/rest-typed/lib";
 import { validate } from "class-validator";
+import { validateClassByValues } from "@packages/utils/class-validator";
+import { plainToInstance } from "class-transformer";
 
 export const TypedRequest = createParamDecorator(
   async (_: unknown, ctx: ExecutionContext) => {
@@ -21,15 +23,9 @@ export const TypedRequest = createParamDecorator(
       throw new Error('Make sure your endpoint is decorated with @TsRest()');
     }
 
-    async function validateClass(object: Record<any, any>, values: Record<any, any>) {
-      for (const key in values) {
-        object[key] = values[key]
-      }
-      return  await validate(object)
-    }
-
     if (endpoint?.method !== "GET" && endpoint?.body) {
-      const errors = await validateClass(new endpoint.body(), req.body)
+      req.body = plainToInstance(endpoint.body, req.body)
+      const errors = await validateClassByValues(new endpoint.body(), req.body)
       if (errors.length > 0) {
         console.log(`Validation failed by class-validator in req.body`, errors)
         throw new HttpException(errors, HttpStatus.BAD_REQUEST)
@@ -37,7 +33,8 @@ export const TypedRequest = createParamDecorator(
     }
 
     if (endpoint.query) {
-      const errors = await validateClass(new endpoint.query(), req.query)
+      req.query = plainToInstance(endpoint.query, req.query)
+      const errors = await validateClassByValues(new endpoint.query(), req.query)
       if (errors.length > 0) {
         console.log(`Validation failed by class-validator in req.query`, errors)
         throw new HttpException(errors, HttpStatus.BAD_REQUEST)
