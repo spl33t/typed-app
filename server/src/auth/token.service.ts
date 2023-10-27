@@ -24,7 +24,7 @@ export class TokenService {
     return { token };
   }
 
-  async verify(token: string): Promise<jwt.JwtPayload | string> {
+  async verify(token: string): Promise<jwt.JwtPayload | string | undefined> {
     return new Promise((res, rej) => {
       jwt.verify(
         token,
@@ -38,7 +38,7 @@ export class TokenService {
     });
   }
 
-  decode(token: string): jwt.JwtPayload | string {
+  decode(token: string): jwt.JwtPayload | string | null {
     return jwt.decode(token);
   }
 }
