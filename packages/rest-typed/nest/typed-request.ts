@@ -1,15 +1,14 @@
 import {
-  BadRequestException,
   createParamDecorator,
-  ExecutionContext,
+  ExecutionContext, HttpException, HttpStatus,
 } from '@nestjs/common';
 import type { Request } from 'express-serve-static-core';
 import { TsRestAppRouteMetadataKey, } from './constants';
 import { Endpoint } from "@packages/rest-typed/lib";
-import { SafeParseError } from "zod/lib/types";
+import { validate } from "class-validator";
 
 export const TypedRequest = createParamDecorator(
-  (_: unknown, ctx: ExecutionContext) => {
+  async (_: unknown, ctx: ExecutionContext) => {
     const req: Request = ctx.switchToHttp().getRequest();
 
     const endpoint: Endpoint | undefined = Reflect.getMetadata(
@@ -22,20 +21,34 @@ export const TypedRequest = createParamDecorator(
       throw new Error('Make sure your endpoint is decorated with @TsRest()');
     }
 
-    const bodyValidation = endpoint.method !== "GET" ? endpoint.body.safeParse(req.body) : undefined
-    if (bodyValidation && !bodyValidation.success) {
-      throw new BadRequestException((bodyValidation as SafeParseError<any>).error);
+    async function validateClass(object: Record<any, any>, values: Record<any, any>) {
+      for (const key in values) {
+        object[key] = values[key]
+      }
+      return  await validate(object)
     }
 
-    const queryValidation = endpoint.query?.safeParse(req.query)
-    if (queryValidation && !queryValidation.success) {
-      throw new BadRequestException((queryValidation as SafeParseError<any>).error);
+    if (endpoint?.method !== "GET" && endpoint?.body) {
+      const errors = await validateClass(new endpoint.body(), req.body)
+      if (errors.length > 0) {
+        console.log(`Validation failed by class-validator in req.body`, errors)
+        throw new HttpException(errors, HttpStatus.BAD_REQUEST)
+      }
     }
+
+    if (endpoint.query) {
+      const errors = await validateClass(new endpoint.query(), req.query)
+      if (errors.length > 0) {
+        console.log(`Validation failed by class-validator in req.query`, errors)
+        throw new HttpException(errors, HttpStatus.BAD_REQUEST)
+      }
+    }
+
 
     return {
       params: req.params,
-      body: bodyValidation?.success ? bodyValidation.data : req.body,
-      query: queryValidation?.success ? queryValidation.data : req.query,
+      body: req.body,
+      query: req.query,
       headers: req.headers
     };
   }
