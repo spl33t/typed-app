@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsOptional, IsString } from "class-validator";
 
 import { Column, DataType, Table, BelongsTo, ForeignKey } from "sequelize-typescript";
-import { AllAttributes, BaseModel, InsertAttributes, OneAttributes, Unique } from "src/database/base.model";
+import { AllAttributes, BaseModel, InsertAttributes, Unique, UniqueAttributes } from "../database/base.model";
 import { UsersModel } from "../users/users.model";
 
 @Table({ tableName: 'projects', })
@@ -25,7 +25,7 @@ export class ProjectsModel extends BaseModel<ProjectsModel> {
 
 type TestInsertAttributes = InsertAttributes<ProjectsModel>
 const testInsert: TestInsertAttributes = {}
-type TestOneAttributes = OneAttributes<ProjectsModel>
+type TestOneAttributes = UniqueAttributes<ProjectsModel>
 const testOne: TestOneAttributes = { id: 2 }
 type TestAllAttributes = AllAttributes<ProjectsModel>
 const testAll: TestAllAttributes = { id: 2 }
