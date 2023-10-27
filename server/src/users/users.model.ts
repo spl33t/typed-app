@@ -8,17 +8,15 @@ import {
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsNumber, IsOptional, IsString } from "class-validator";
-import { BaseModel, InsertAttributes } from "src/database/base.model";
+import { BaseModel, Unique } from "../database/base.model";
 import { ProjectsModel } from "../projects/projects.model";
-
-type TestInfer = InsertAttributes<UsersModel>
 
 @Table({ tableName: 'users', })
 export class UsersModel extends BaseModel<UsersModel> {
   @ApiProperty({ example: "spl33t", description: 'Логин', required: true })
   @IsString()
   @Column({ type: DataType.STRING, unique: true, allowNull: false })
-  login: string
+  login: Unique<string>
 
   @ApiProperty({ example: "spl33t", description: 'Пароль', required: true })
   @IsString()
@@ -28,8 +26,8 @@ export class UsersModel extends BaseModel<UsersModel> {
   @ApiProperty({ example: "+7 (977) 270 84-78", description: 'Телефон', required: true })
   @IsString()
   @Transform((params) => params.value + "transform-is-work")
-  @Column({ type: DataType.STRING, allowNull: false, })
-  phone: string
+  @Column({ type: DataType.STRING, allowNull: false, unique: true })
+  phone: Unique<string>
 
   @ApiProperty({ example: "Юра Клюжев", description: 'Имя' })
   @IsString()
