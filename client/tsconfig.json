@@ -20,7 +20,8 @@
     "strict": true,
     "paths": {
       "@/*": ["src/*"],
-      "@packages/*": ["../packages/*"]
+      "@packages/*": ["../packages/*"],
+      "@shared/*": ["../shared/*"]
     }
   },
   "exclude": [

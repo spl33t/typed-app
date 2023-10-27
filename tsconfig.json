@@ -1,12 +1,14 @@
 {
     "compilerOptions": {
         "experimentalDecorators": true,
+        "strictPropertyInitialization": false,
         "module": "ESNext",
         "target": "es5",
         "sourceMap": true,
         "esModuleInterop": true,
         "jsx": "react-jsx",
         "baseUrl": ".",
+        "emitDecoratorMetadata": true,
         "composite": false,
         "declaration": true,
         "declarationMap": true,
@@ -20,7 +22,8 @@
         "skipLibCheck": true,
         "strict": true,
         "paths": {
-            "@packages/*": ["packages/*"]
+            "@packages/*": ["packages/*"],
+            "@shared/*": ["shared/*"]
         }
     },
     "exclude": ["node_modules", "dist"]
