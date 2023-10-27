@@ -3,7 +3,7 @@ import { Without } from "./type-utils";
 import { IncomingHttpHeaders } from "node:http";
 import { Type } from "@nestjs/common"
 
-type TypeOrNever<T extends Type | undefined> = T extends Type ? T["prototype"] : never
+export type TypeOrNever<T extends Record<any, any> | undefined> = T extends Record<any, any> ? T["prototype"] : never
 
 export type ServerInferRequest<T extends Endpoint> = Without<{
   params: ParamsFromUrl<T['path']>
