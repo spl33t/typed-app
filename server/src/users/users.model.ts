@@ -7,9 +7,15 @@ import {
 } from "sequelize-typescript"
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import { IsNumber, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsNumber, IsOptional, IsString } from "class-validator";
 import { BaseModel, Unique } from "../database/base.model";
 import { ProjectsModel } from "../projects/projects.model";
+
+export enum UserRoleEnum {
+  ROOT = "ROOT",
+  ADMIN = "ADMIN",
+  DISPATCHER = "DISPATCHER",
+}
 
 @Table({ tableName: 'users', })
 export class UsersModel extends BaseModel<UsersModel> {
@@ -40,6 +46,11 @@ export class UsersModel extends BaseModel<UsersModel> {
   @IsOptional()
   @Column({ type: DataType.INTEGER, })
   age?: number
+
+  @ApiProperty({ enum: UserRoleEnum, example: "1337", description: 'Роль' })
+  @IsEnum(UserRoleEnum)
+  @Column({ type: DataType.ENUM(...Object.values(UserRoleEnum)), })
+  role: typeof UserRoleEnum
 
   @ApiProperty({
     readOnly: true,
