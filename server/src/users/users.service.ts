@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { UsersModel } from './users.model';
 import { CreateUserDto } from "./create-user.dto";
@@ -9,8 +9,12 @@ export class UsersService {
   constructor(@InjectModel(UsersModel) private userRepository: typeof UsersModel,) {}
 
   async create(dto: CreateUserDto) {
+    try {
       const s = await this.userRepository.create({ ...dto })
       return s
+    }catch (err) {
+      throw new HttpException(err as any, HttpStatus.FORBIDDEN)
+    }
 
   }
 

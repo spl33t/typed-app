@@ -1,9 +1,10 @@
-import { Endpoint, GetResponsesData, initController, ServerInferRequest } from "@packages/rest-typed";
+import { Endpoint, GetResponsesData,  ServerInferRequest } from "@packages/rest-typed";
 import { insertParamsIntoPath } from "@packages/rest-typed/lib/paths";
 
 type RequestParams = { params?: any, body?: any, query?: any }
 type FetcherInput = { method: Endpoint["method"], path: string, body?: any, query?: any }
 
+/*
 export function initClient<T extends ReturnType<typeof initController>, Fetcher = (...args: any) => Promise<any>>(
   controller: T,
   options: {
@@ -20,4 +21,4 @@ export function initClient<T extends ReturnType<typeof initController>, Fetcher 
       path: insertParamsIntoPath({ path: `${controller.prefix}${endpoint.path}`, params: args.params })
     })]
   })) as unknown as { [Key in keyof T["endpoints"]]: (args: Omit<ServerInferRequest<T["endpoints"][Key]>, "headers">) => Promise<GetResponsesData<T["endpoints"][Key]>> }
-}
+}*/

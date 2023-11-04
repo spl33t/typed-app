@@ -5,7 +5,6 @@ import {
 import type { Request } from 'express-serve-static-core';
 import { TsRestAppRouteMetadataKey, } from './constants';
 import { Endpoint } from "@packages/rest-typed/lib";
-import { validate } from "class-validator";
 import { validateClassByValues } from "@packages/utils/class-validator";
 import { plainToInstance } from "class-transformer";
 

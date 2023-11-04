@@ -1,44 +1,37 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import * as jwt from 'jsonwebtoken';
-import { HttpException } from "@nestjs/common"
+import { Injectable } from '@nestjs/common';
+import * as jwt from "jsonwebtoken";
 
-const secretJwtToken = "ABCDEFGHIJKLMNOPQRSTUVWXYZabc"
-
-type JwtUserDataPayload = {
+class JwtPayload {
+  id: number
   login: string
+
+  constructor(id: number, login: string) {
+    this.id = id
+    this.login = login
+  }
 }
+
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "qwe"
+const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || "1d"
 
 @Injectable()
 export class TokenService {
-  constructor() {}
 
-  sign(payload: JwtUserDataPayload): { token: string } {
-    const token = jwt.sign(
-      payload,
-      secretJwtToken,
+  sign(payload: JwtPayload): string {
+    return jwt.sign(
+      { ...payload },
+      JWT_ACCESS_SECRET,
       {
-        expiresIn: 300, // 5 minutes
+        expiresIn: JWT_ACCESS_EXPIRES_IN,
       },
-    );
-
-    return { token };
+    )
   }
 
-  async verify(token: string): Promise<jwt.JwtPayload | string | undefined> {
-    return new Promise((res, rej) => {
-      jwt.verify(
-        token,
-        secretJwtToken,
-        (error, decoded) => {
-          if (error) {
-            rej(new HttpException(error.message, HttpStatus.UNAUTHORIZED));
-          }
-          res(decoded);
-        });
-    });
-  }
-
-  decode(token: string): jwt.JwtPayload | string | null {
-    return jwt.decode(token);
+  async verify(token: string): Promise<JwtPayload | undefined> {
+    try {
+      return await jwt.verify(token, JWT_ACCESS_SECRET)  as JwtPayload
+    } catch (err) {
+      console.log(err)
+    }
   }
 }

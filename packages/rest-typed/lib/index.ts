@@ -32,19 +32,25 @@ type EndpointMutation = EndpointCommon & {
   body: Type;
 };
 
-export type Endpoint = EndpointQuery | EndpointMutation;
+
+export type Endpoint = EndpointQuery | EndpointMutation
 
 export type Controller = {
   prefix: string,
   endpoints: Record<string, Endpoint>
 }
 
-type RecursivelyProcessController<T extends Controller | Record<any, Endpoint>> = {
-  [K in keyof T]: T[K] extends Record<any, Endpoint> ? RecursivelyProcessController<T[K]> : T[K]
-};
+type RecursivelyProcess<T extends Record<any, any>, SchemaType extends Record<any, any> = {}> = {
+  [K in keyof T]: T[K] extends SchemaType ? RecursivelyProcess<T[K], SchemaType[K]> : T[K]
+}
 
-export function initController<T extends Controller>(controller: RecursivelyProcessController<T>) {
-  return controller as T
+export type CreateSchema<SchemaGeneric extends Record<any, any>, SchemaType extends Record<any, any>> =
+  RecursivelyProcess<SchemaGeneric, SchemaType> &
+  { [K in keyof Omit<SchemaGeneric, keyof SchemaType>]: K extends keyof SchemaType ? SchemaGeneric[K] : never }
+
+
+export function createController<T extends Controller>(controller: CreateSchema<T, Controller>) {
+  return controller;
 }
 
 export type GetResponsesData<T extends Endpoint> = T["response"]["prototype"]

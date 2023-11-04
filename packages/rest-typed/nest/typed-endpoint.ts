@@ -1,4 +1,4 @@
-import { Endpoint } from "@packages/rest-typed/lib";
+import { Endpoint, } from "@packages/rest-typed/lib";
 import {
   applyDecorators,
   Delete,
@@ -7,10 +7,13 @@ import {
   Post,
   Put,
   SetMetadata,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { TsRestAppRouteMetadataKey } from "./constants";
 import { TsRestInterceptor } from "./interceptor";
+import { JwtGuard } from "../../../server/src/auth/jwt.guard";
+
 
 const getMethodDecorator = (endpoint: Endpoint) => {
   switch (endpoint.method) {
@@ -42,5 +45,7 @@ export const TypedEndpoint = (endpoint: Endpoint) => {
       ]
     );
   }
+
   return applyDecorators(...decorators);
 };
+

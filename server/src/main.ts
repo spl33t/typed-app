@@ -29,7 +29,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {    logger: ["warn", "error", "fatal", "verbose", "debug"]});
   app.enableCors({ credentials: true, origin: ["https://127.0.0.1:3000"] })
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
