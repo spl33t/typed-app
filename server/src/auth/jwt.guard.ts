@@ -1,10 +1,11 @@
-import { CanActivate, ExecutionContext, HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { TokenService } from "./token.service";
-
+import { UsersService } from "../users/users.service";
 
 @Injectable()
 export class JwtGuard implements CanActivate {
-  constructor(@Inject("TokenService") private tokenService : TokenService) {}
+  constructor(private tokenService: TokenService,
+              private userService: UsersService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
 
@@ -12,13 +13,16 @@ export class JwtGuard implements CanActivate {
 
     const token = this.getToken(request);
     const payload = await this.tokenService.verify(token);
- /*   const user = await this.userService.getUnique({ id: payload?.id })*/
+    if(!payload) {
+      throw new HttpException("Ключ доступа невалиден", HttpStatus.FORBIDDEN)
+    }
+    const user = await this.userService.getUnique({ id: payload?.id })
 
-    if (payload) {
-      request.user = payload;
+    if (user) {
+      request.user = user;
       return true;
     } else {
-      throw new HttpException("Ключ доступа невалиден", HttpStatus.FORBIDDEN)
+      throw new HttpException("Пользователь не зарегистрирован в системе", HttpStatus.FORBIDDEN)
     }
   }
 

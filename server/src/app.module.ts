@@ -1,4 +1,4 @@
-import { Inject, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppGateway } from "./app.gateway";
@@ -9,8 +9,6 @@ import { AuthModule } from './auth/auth.module';
 import { ProjectsModule } from './projects/projects.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from "./auth/jwt.guard";
-import { UsersService } from "./users/users.service";
-import { TokenService } from "./auth/token.service";
 
 @Module({
   controllers: [AppController],
@@ -20,8 +18,8 @@ import { TokenService } from "./auth/token.service";
     {
       provide: APP_GUARD,
       useClass: JwtGuard,
-      //useValue: [UsersService, TokenService]
-    },],
+    },
+  ],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
