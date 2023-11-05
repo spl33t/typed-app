@@ -4,6 +4,7 @@ import { IsOptional, IsString } from "class-validator";
 import { Column, DataType, Table, BelongsTo, ForeignKey } from "sequelize-typescript";
 import { AllAttributes, BaseModel, InsertAttributes, Unique, UniqueAttributes } from "../database/base.model";
 import { UsersModel } from "../users/users.model";
+import { CategoryModel } from "../category/category.model";
 
 @Table({ tableName: 'projects', })
 export class ProjectsModel extends BaseModel<ProjectsModel> {
@@ -21,11 +22,20 @@ export class ProjectsModel extends BaseModel<ProjectsModel> {
   @ApiProperty({ readOnly: true, type: () => UsersModel, description: 'Юзер' })
   @BelongsTo(() => UsersModel)
   user: UsersModel
+
+  @ApiProperty({ example: 1, description: 'Уникальный индитефикатор категории' })
+  @ForeignKey(() => CategoryModel)
+  @Column({ type: DataType.INTEGER, allowNull: false, validate: { notEmpty: true } })
+  categoryId?: number
+
+  @ApiProperty({ readOnly: true, type: () => CategoryModel, description: 'Категория' })
+  @BelongsTo(() => CategoryModel)
+  category: CategoryModel
 }
 
-type TestInsertAttributes = InsertAttributes<ProjectsModel>
+/*type TestInsertAttributes = InsertAttributes<ProjectsModel>
 const testInsert: TestInsertAttributes = {}
 type TestOneAttributes = UniqueAttributes<ProjectsModel>
 const testOne: TestOneAttributes = { id: 2 }
 type TestAllAttributes = AllAttributes<ProjectsModel>
-const testAll: TestAllAttributes = { id: 2 }
+const testAll: TestAllAttributes = { id: 2 }*/
