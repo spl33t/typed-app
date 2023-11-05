@@ -6,13 +6,13 @@ import { UniqueAttributes } from "../database/base.model";
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(UsersModel) private userRepository: typeof UsersModel,) {}
+  constructor(@InjectModel(UsersModel) private userRepository: typeof UsersModel) {}
 
   async create(dto: CreateUserDto) {
     try {
       const s = await this.userRepository.create({ ...dto })
       return s
-    }catch (err) {
+    } catch (err) {
       throw new HttpException(err as any, HttpStatus.FORBIDDEN)
     }
 
@@ -20,7 +20,7 @@ export class UsersService {
 
   //todo: extend by queryController
   async getUnique(where: UniqueAttributes<UsersModel>) {
-    const s = await this.userRepository.unique(where)
+    const s = await this.userRepository.unique(where, {})
     return s
   }
 

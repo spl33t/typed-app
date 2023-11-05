@@ -50,7 +50,7 @@ export class UsersModel extends BaseModel<UsersModel> {
   @ApiProperty({ enum: UserRoleEnum, example: "1337", description: 'Роль' })
   @IsEnum(UserRoleEnum)
   @Column({ type: DataType.ENUM(...Object.values(UserRoleEnum)), })
-  role:  typeof UserRoleEnum
+  role: typeof UserRoleEnum
 
   @ApiProperty({
     readOnly: true,
@@ -61,3 +61,5 @@ export class UsersModel extends BaseModel<UsersModel> {
   @HasMany(() => ProjectsModel)
   projects: ProjectsModel[]
 }
+
+
