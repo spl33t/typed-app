@@ -1,11 +1,12 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-
-const PORT = 8000
-
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { LogLevel } from "@nestjs/common/services/logger.service";
+
+
+const PORT = 8000
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -29,7 +30,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {    logger: ["warn", "error", "fatal", "verbose", "debug"]});
+
+  function loggerMode(mode: "warning" | "full" = "warning") {
+    const logger: LogLevel[] = ["warn", "error", "fatal", "verbose", "debug"]
+    if (mode === "full") logger.push("log")
+    return logger
+  }
+
+  const app = await NestFactory.create(AppModule, { logger: loggerMode("warning") });
   app.enableCors({ credentials: true, origin: ["https://127.0.0.1:3000"] })
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
