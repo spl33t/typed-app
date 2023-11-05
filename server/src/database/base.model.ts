@@ -11,10 +11,13 @@ import {
   BeforeValidate,
 } from 'sequelize-typescript';
 import { ApiProperty } from "@nestjs/swagger";
-import { Filterable } from 'sequelize/types/model';
+import { Filterable, WhereOptions } from 'sequelize/types/model';
 import { validateClassByValues } from "@packages/utils/class-validator";
 import { HttpStatus, HttpException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { UsersModel } from "../users/users.model";
+import { ProjectsModel } from "../projects/projects.model";
+import { CategoryModel } from "../category/category.model";
 
 enum BRANDS_ENUM {
   UNIQUE = "UNIQUE",
@@ -66,8 +69,73 @@ export type WithoutAssociationsAttributes<M extends {}> = {
 
 type WithoutAssociationsAttributesKeys<M extends {}, Key extends keyof M> =
   M[Key] extends CommonExcludeAttributes ? never :
-    Key extends keyof Omit<Model, "id"> ? never
-      : Key
+    Key extends keyof Omit<Model, "id"> ? never :
+      Key
+
+type AnyModel = BaseModel<any> | BaseModel<any>[] | Model | Model[]
+
+export type AssociationsAttributes<M extends {}> = {
+  [Key in keyof M as AssociationsAttributesKeys<M, Key>]?: M[Key]
+};
+
+type AssociationsAttributesKeys<M extends {}, Key extends keyof M> =
+  Key extends "deletedAt" | "version" ? never :
+    M[Key] extends AnyModel ? Key :
+      never
+
+
+export type IncludesOpt<M extends AnyModel> = {
+  [K in keyof AssociationsAttributes<M>]: M[K] extends AnyModel ? {
+    attributes?: M[K] extends Array<any> ?
+      Partial<Record<keyof WithoutAssociationsAttributes<M[K][number]>, boolean>> :
+      Partial<Record<keyof WithoutAssociationsAttributes<M[K]>, boolean>>
+    where?: M[K] extends Array<any> ?
+      WhereOptions<WithoutAssociationsAttributes<M[K][number]>> :
+      WhereOptions<WithoutAssociationsAttributes<M[K]>>
+    include?: M[K] extends Array<any> ?
+      IncludesOpt<M[K][number]> :
+      IncludesOpt<M[K]>
+  } : never
+}
+
+type IncOpts<M extends AnyModel> = {
+  attributes?: Partial<Record<keyof WithoutAssociationsAttributes<M>, boolean>>
+  where?: WhereOptions<WithoutAssociationsAttributes<M>>
+  include?: IncludesOpt<M>
+}
+
+const test: AssociationsAttributes<CategoryModel> = {}
+const sas: IncOpts<ProjectsModel> = {
+
+  include: {
+    category: {
+      attributes: { id: true, name: true },
+      where: {},
+      include: {
+        projects: {
+          include: {
+            user: {
+              where: {
+
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+/*
+type DepthInclude<Model extends BaseModel<any>> = {
+  [K in keyof AssociationsAttributes<Model>]?: Model[K] extends infer U extends IsInclude<U> ? DepthInclude<Model[K]> : boolean
+}
+*/
+
+/*type IsInclude<Model extends BaseModel<any>> = {
+  [K in keyof Model]: Model[K] extends BaseModel<any> ? true : false
+}*/
 
 export type AllAttributes<M extends {}> = {
   [Key in keyof M as AllAttributesKeys<M, Key>]?: M[Key]
@@ -123,8 +191,41 @@ export class BaseModel<TModelAttributes extends {}>
   }
 
   static async unique<M extends BaseModel<any>>
-  (this: ModelCtor<M>, values?: UniqueAttributes<M>) {
-    return await this.findOne({ where: values as Filterable["where"] })
+  (
+    this: ModelCtor<M>,
+    values?: UniqueAttributes<M>,
+    includes?: AssociationsAttributes<M>,
+    exceptions?: {
+      notFound: boolean
+    }
+  ) {
+    let result = null
+    let searchKey = null
+    let searchValue = null
+    const where = []
+
+    for (const key in values) {
+      const value = values[key]
+      if (value) {
+        searchKey = key
+        searchValue = value
+        where.push({ [key]: value })
+        break
+      }
+    }
+    try {
+      result = await this.findOne({ where: where as Filterable["where"] })
+    } catch (err: any) {
+      console.log(err)
+      throw new HttpException(err, HttpStatus.BAD_REQUEST)
+    }
+
+    if (!result && exceptions?.notFound) {
+      throw new HttpException(`Поиск по ${searchKey} ${searchValue} в таблице ${this.getTableName()} не дал результатов, запись не найдена`, HttpStatus.NOT_FOUND,)
+    }
+
+    return result
+
   }
 
   static async all<M extends BaseModel<any>>
